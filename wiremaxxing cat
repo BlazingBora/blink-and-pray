@@ -1,0 +1,54 @@
+#include <Servo.h> 
+
+Servo pan;
+Servo tilt;
+
+int panPos = 90;
+int tiltPos = 90;
+
+void setup() {
+  Serial.begin(115200);
+
+  pan.attach(9);
+  tilt.attach(10);
+
+  pan.write(panPos);
+  tilt.write(tiltPos);
+}
+
+void loop() {
+
+  if (Serial.available()) {
+
+    String data = Serial.readStringUntil('\n');
+
+    int comma = data.indexOf(',');
+
+    if (comma > 0) {
+
+      int x = data.substring(0, comma).toInt();
+      int y = data.substring(comma + 1).toInt();
+
+      const int centerX = 320;
+      const int centerY = 240;
+
+      if (x < centerX - 15)
+        panPos++;
+
+      if (x > centerX + 15)
+        panPos--;
+
+      if (y < centerY - 15)
+        tiltPos--;
+
+      if (y > centerY + 15)
+        tiltPos++;
+
+      panPos = constrain(panPos, 0, 180);
+      tiltPos = constrain(tiltPos, 0, 180);
+
+      pan.write(panPos);
+      tilt.write(tiltPos);
+    }
+  }
+}
