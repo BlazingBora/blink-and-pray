@@ -1,0 +1,53 @@
+/*open cv for laser tracker
+*/
+
+import cv2
+import serial
+
+ser = serial.Serial("COM3",115200)
+
+cap = cv2.VideoCapture(0)
+
+while True:
+
+    ret, frame = cap.read()
+
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    lower1 = (0,120,255)
+    upper1 = (10,255,255)
+
+    lower2 = (170,120,255)
+    upper2 = (180,255,255)
+
+    mask1 = cv2.inRange(hsv, lower1, upper1)
+    mask2 = cv2.inRange(hsv, lower2, upper2)
+
+    mask = mask1 | mask2
+
+    contours,_ = cv2.findContours(mask,
+                                  cv2.RETR_EXTERNAL,
+                                  cv2.CHAIN_APPROX_SIMPLE)
+
+    if contours:
+
+        largest = max(contours,key=cv2.contourArea)
+
+        M = cv2.moments(largest)
+
+        if M["m00"] != 0:
+
+            cx = int(M["m10"]/M["m00"])
+            cy = int(M["m01"]/M["m00"])
+
+            cv2.circle(frame,(cx,cy),10,(0,255,0),2)
+
+            ser.write(f"{cx},{cy}\n".encode())
+
+    cv2.imshow("Laser Tracker",frame)
+
+    if cv2.waitKey(1)==27:
+        break
+
+cap.release()
+cv2.destroyAllWindows()
