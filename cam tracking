@@ -1,4 +1,5 @@
 /*open cv for laser tracker
+have to fix calib
 */
 
 import cv2
